@@ -37,7 +37,6 @@ def train_char_lm(fname, order=4, add_k=1):
         history, char = data[i:i + order], data[i + order]
         lm[history][char] += 1
 
-    # piazza 329 says we can make this assumption
     vocab = set([chr(i) for i in range(128)])
     # vocab = set(list(data))
     for key in lm.keys():
@@ -265,7 +264,7 @@ def label_cities(file_path, lms, countries, orders, interpolation=False, lambdas
     return labels
 
 
-# Part 3
+# predicts language that a text is written in
 def text_classification(orders, add_k=1, interpolation=False, lambdas=None):
     train_path = "train/"
     val_path = "val/"
@@ -274,7 +273,6 @@ def text_classification(orders, add_k=1, interpolation=False, lambdas=None):
     lms = []
 
     # currently assuming that P(Country) is the same for all countries
-    # (all files contain same number of cities, so can't really do better)
 
     for country in countries:
         if interpolation:
@@ -380,11 +378,6 @@ if __name__ == '__main__':
     orders['ir'] = n
     orders['pk'] = n
     orders['za'] = n
-
-    # lm = train_char_lm("shakespeare_input.txt", order=4, add_k=3)
-    # lms = [train_char_lm("shakespeare_input.txt", order=i, add_k=3) for i in range(0, 5)]
-    # print(perplexity_backoff("shakespeare_sonnets.txt", lms, order=4, lambdas=lambdas4[1]))
-    # print(perplexity_backoff("nytimes_article.txt", lms, order=4, lambdas=lambdas4[1]))
 
     text_classification(orders, add_k=2)
     # text_classification(orders, add_k=1, interpolation=True, lambdas=lambdas3)
