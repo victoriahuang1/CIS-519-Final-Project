@@ -2,8 +2,17 @@ from random import random
 
 
 # maps a language to its language family
-# TODO: what languages are we going to use?
-lang_to_fam = {}
+lang_to_fam =
+    {'English':'Indo-European',
+     'Hebrew':'Afro-Asiatic',
+     'Arabic':'Afro-Asiatic',
+     'Spanish':'Indo-European',
+     'French':'Indo-European',
+     'German':'Indo-European',
+     'Afrikaans':'Indo-European',
+     'Swahili':'Niger–Congo',
+     'Zulu':'Niger–Congo',
+     'Chinese':'Sino-Tibetan'}
 
 
 # Just a simple baseline that should do roughly as well as just randomly guessing the label
@@ -51,3 +60,15 @@ class BaselineModel(object):
             x = x - prob
             if x <= 0:
                 return fam
+
+def write_pred(train_data, test_data, out_path, pred_fam=False):
+    model = Baseline()
+    model.train(train_data)
+
+    with open(out_path, 'w') as out:
+        for document in test_data:
+            if pred_fam:
+                out.write(predict_family(document) + '\n')
+            else:
+                out.write(predict_language(document) + '\n')
+
