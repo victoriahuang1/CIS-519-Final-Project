@@ -16,6 +16,7 @@ predictions file as the first argument, and provide the path to the gold labels 
 argument. See example of how to run the script below:
 
 $ python3.6 score.py pred_labels gold_labels
+
 $ Accuracy: 0.5
 
 
