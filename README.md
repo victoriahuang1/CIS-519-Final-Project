@@ -10,7 +10,7 @@
 
 ## Project Setup
 * Test and train data are in the data/ folder
-* Source files are in src/
+* Source files are in the root directory
 * The commands provided below are intended to be used in the root directory of the project
 
 
@@ -21,7 +21,7 @@
 predictions file as the first argument, and provide the path to the gold labels as the second
 argument. See example of how to run the script below:
 
-$ python3.6 src/score.py pred_labels gold_labels
+$ python3.6 score.py pred_file
 
 $ Accuracy: 0.5
 
