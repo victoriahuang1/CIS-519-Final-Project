@@ -1,18 +1,22 @@
 from random import random
 
 
+lang_to_fam_path = 'data/languages_to_families.txt'
+
+
+# Parses files of the format `<language>, <family>` to map languages to their language families
+def read_lang_to_fam(filepath):
+    lang_to_fam = {}
+    open(filepath, mode='r', errors='ignore') as f:
+        for line in f:
+            parsed_line = line.split(',')
+            lang_to_fam[parsed_line[0].strip()] = parsed_line[1].strip()
+    f.close()
+    return lang_to_fam
+
+
 # maps a language to its language family
-lang_to_fam =
-    {'English':'Indo-European',
-     'Hebrew':'Afro-Asiatic',
-     'Arabic':'Afro-Asiatic',
-     'Spanish':'Indo-European',
-     'French':'Indo-European',
-     'German':'Indo-European',
-     'Afrikaans':'Indo-European',
-     'Swahili':'Niger–Congo',
-     'Zulu':'Niger–Congo',
-     'Chinese':'Sino-Tibetan'}
+lang_to_fam = read_lang_to_fam(lang_to_fam_path)
 
 
 # Just a simple baseline that should do roughly as well as just randomly guessing the label
