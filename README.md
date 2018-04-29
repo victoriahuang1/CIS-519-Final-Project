@@ -30,7 +30,8 @@ $ Accuracy: 0.5
 
 * Predicts labels based on probability distribution defined by the label proportions
 * All further work should be able to beat this baseline
-* TODO: explain how to run
+
+$ python3.6 simple_baseline.py pred_file 
 
 
 ## Language Model Baseline
