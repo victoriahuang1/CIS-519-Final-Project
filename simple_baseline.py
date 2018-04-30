@@ -69,17 +69,20 @@ def write_pred(train_data, test_data, out_path, pred_fam=False, pred_lang=False)
     model = BaselineModel()
     model.train(train_data)
 
-    docs, labels = test_data
+    docs, gold_labels = test_data
+
+    y_pred = []
 
     i = 0
-    with open(out_path, 'w') as out:
-        for doc in docs:
-            pred = model.predict_language(doc)
-            if pred_fam:
-                pred = model.predict_family(doc, predict_lang=pred_lang)
-                labels[i] = lang_to_fam[labels[i]]
-            out.write("{}\t{}\n".format(pred, labels[i]))
-            i += 1
+    for doc in docs:
+        pred = model.predict_language(doc)
+        if pred_fam:
+            pred = model.predict_family(doc, predict_lang=pred_lang)
+            gold_labels[i] = lang_to_fam[gold_labels[i]]
+        y_pred.append(pred)
+        i += 1
+
+    tools.write_pred(y_pred, gold_labels, out_path)
 
 
 if __name__ == '__main__':
