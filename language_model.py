@@ -3,6 +3,7 @@ import sys
 import pickle
 import data_tools as tools
 import numpy as np
+import os
 
 lang_to_fam_path = 'data/languages_to_families.txt'
 wiki_path = 'data/wiki/'
@@ -33,8 +34,10 @@ class LanguageModel(object):
     # trains model on training data (should take in list of documents)
     def train(self, train_data):
         if self.pretrained:
-            self.ngrams = pickle.load(open("{}.p".format(self.language), "rb"))
-            return
+            pickle_path = "pickles/{}.p".format(self.language)
+            if os.path.exists(pickle_path):
+                self.ngrams = pickle.load(open(pickle_path, "rb"))
+                return
 
         lm = defaultdict(Counter)
         pad = "~" * self.order
@@ -79,7 +82,7 @@ class LanguageModel(object):
         for hist, chars in lm.items():
             self.ngrams[hist] = normalize(chars)
         print("Finished {}".format(self.language))
-        pickle.dump(self.ngrams, open("{}.p".format(self.language), "wb"))
+        pickle.dump(self.ngrams, open("pickles/{}.p".format(self.language), "wb"))
 
     # gives perplexity score
     def predict(self, document):
