@@ -65,7 +65,7 @@ class BaselineModel(object):
                 return fam
 
 
-def write_pred(train_data, test_data, out_path, pred_fam=False):
+def write_pred(train_data, test_data, out_path, pred_fam=False, pred_lang=False):
     model = BaselineModel()
     model.train(train_data)
 
@@ -76,7 +76,8 @@ def write_pred(train_data, test_data, out_path, pred_fam=False):
         for doc in docs:
             pred = model.predict_language(doc)
             if pred_fam:
-                pred = model.predict_family(doc)
+                pred = model.predict_family(doc, predict_lang=pred_lang)
+                labels[i] = lang_to_fam[labels[i]]
             out.write("{}\t{}\n".format(pred, labels[i]))
             i += 1
 
@@ -85,7 +86,15 @@ if __name__ == '__main__':
     if len(sys.argv) < 2:
         print('Argument for output file needed')
 
+    pred_fam = False
+    pred_lang = False
+
+    if len(sys.argv) > 2:
+        pred_fam = True
+    if len(sys.argv) > 3:
+        pred_lang = True
+
     train_data = tools.load_wiki_data(wiki_path + 'train/')
     test_data = tools.load_wiki_data(wiki_path + 'test/')
 
-    write_pred(train_data, test_data, sys.argv[1])
+    write_pred(train_data, test_data, sys.argv[1], pred_fam=pred_fam, pred_lang=pred_lang)
