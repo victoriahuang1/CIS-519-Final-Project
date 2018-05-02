@@ -19,9 +19,11 @@ def read_wiki_file(datapath):
     with open(datapath, mode='r', errors='ignore', encoding='utf-8') as f:
         curr_doc = []
         for line in f:
-            if '</doc>' in line or '<doc' in line:
+            if '</doc>' in line:
                 curr_doc = []
                 docs.append(curr_doc)
+                continue
+            elif '<doc' in line:
                 continue
             words = line.split()
             curr_doc += words

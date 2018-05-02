@@ -19,7 +19,7 @@ vocab = set([chr(i) for i in range(256)])
 
 
 class LanguageModel(object):
-    def __init__(self, language, order=4, add_k=1, learn_fam=False, pretrained=False):
+    def __init__(self, language, order=4, add_k=1.0, learn_fam=False, pretrained=False):
         super(LanguageModel, self).__init__()
 
         self.language = language
@@ -34,7 +34,7 @@ class LanguageModel(object):
     # trains model on training data (should take in list of documents)
     def train(self, train_data):
         if self.pretrained:
-            pickle_path = "pickles/{}.p".format(self.language)
+            pickle_path = "pickles/{}-{}.p".format(self.language, self.order)
             if os.path.exists(pickle_path):
                 self.ngrams = pickle.load(open(pickle_path, "rb"))
                 return
@@ -82,7 +82,7 @@ class LanguageModel(object):
         for hist, chars in lm.items():
             self.ngrams[hist] = normalize(chars)
         print("Finished {}".format(self.language))
-        pickle.dump(self.ngrams, open("pickles/{}.p".format(self.language), "wb"))
+        pickle.dump(self.ngrams, open("pickles/{}-{}.p".format(self.language, self.order), "wb"))
 
     # gives perplexity score
     def predict(self, document):
@@ -106,33 +106,87 @@ class LanguageModel(object):
         if i == 0:
             return float("inf")
 
+        # use perplexity since it normalizes with the number of words (some characters might be OOV in some languages)
         perplexity = np.sum(np.ma.log(probs_list)) * (-1.0 / i)
 
         return perplexity
 
 
-# returns a list of preditions on the languages for each document
+# predicts the label of a single document
+def predict_doc_label(doc, models):
+    min_perplexity = float("inf")
+    idx = 0
+    doc_text = ' '.join(doc[:100])
+    for i in range(0, len(models)):
+        perplexity = models[i].predict(doc_text)
+        if perplexity < min_perplexity:
+            min_perplexity = perplexity
+            idx = i
+    if models[idx].learn_fam:
+        return models[idx].family
+    else:
+        return models[idx].language
+
+
+# returns a list of predictions on the languages for each document
 def predict_labels(documents, models):
     labels = []
     count = 0
     for doc in documents:
-        min_perplexity = float("inf")
-        idx = 0
-        doc_text = ' '.join(doc[:100])
-        for i in range(0, len(models)):
-            perplexity = models[i].predict(doc_text)
-            if perplexity < min_perplexity:
-                min_perplexity = perplexity
-                idx = i
-        if models[idx].learn_fam:
-            labels.append(models[idx].family)
-        else:
-            labels.append(models[idx].language)
+        labels.append(predict_doc_label(doc, models))
         count += 1
 
         if count % 500 == 0:
             print("Labels predicted: {}".format(count))
     return labels
+
+
+def predict_by_word(documents, models):
+    labels = []
+    count = 0
+    for doc in documents:
+        max_lang = -1
+        doc_label = '<UNK>'
+        lang_count = {}
+        for word in doc[:100]:
+            min_perplexity = float("inf")
+            idx = 0
+            for i in range(0, len(models)):
+                perplexity = models[i].predict(word)
+                if perplexity < min_perplexity:
+                    min_perplexity = perplexity
+                    idx = i
+
+            if models[idx].learn_fam:
+                key = models[idx].family
+            else:
+                key = models[idx].language
+
+            if key not in lang_count:
+                lang_count[key] = 0
+            lang_count[key] += 1
+            if lang_count[key] > max_lang:
+                max_lang = lang_count[key]
+                doc_label = key
+
+        labels.append(doc_label)
+        count += 1
+
+        if count % 500 == 0:
+            print("Labels predicted: {}".format(count))
+    return labels
+
+
+def get_language_models(orders, add_k, learn_fam, train_data, pretrained):
+    models = []
+
+    # currently assuming that P(Country) is the same for all countries - TODO: CHANGE?
+    for language in lang_to_fam.keys():
+        print("Training {} model...".format(language))
+        model = LanguageModel(language, order=orders[language], add_k=add_k, learn_fam=learn_fam, pretrained=pretrained)
+        model.train(train_data)
+        models.append(model)
+    return models
 
 
 if __name__ == '__main__':
@@ -158,20 +212,14 @@ if __name__ == '__main__':
         orders[lang] = n
 
     print('Training language models...')
-    models = []
-
-    # currently assuming that P(Country) is the same for all countries - TODO: CHANGE?
-    for language in lang_to_fam.keys():
-        print("Training {} model...".format(language))
-        model = LanguageModel(language, order=orders[language], add_k=1, learn_fam=pred_fam)
-        model.train(train_data)
-        models.append(model)
+    models = get_language_models(orders, 1, pred_fam, train_data, True)
 
     # test data
     docs, gold_labels = test_data
 
     print('Making Predictions...')
     y_pred = predict_labels(docs, models)
+    # y_pred = predict_by_word(docs, models)
 
     if pred_fam:
         for i in range(0, len(gold_labels)):
