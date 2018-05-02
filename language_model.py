@@ -63,7 +63,7 @@ class LanguageModel(object):
 
             count += 1
             #TODO: change?
-            if count % 5 == 0:
+            if count == 10:
                 break
 
         # TODO: handle families
@@ -190,15 +190,15 @@ def get_language_models(orders, add_k, learn_fam, train_data, pretrained):
 
 
 if __name__ == '__main__':
-    if len(sys.argv) < 2:
-        print('Argument for output file needed')
+    if len(sys.argv) < 3:
+        print('Argument for [language model order] and [output file] needed')
 
     pred_fam = False
     pred_lang = False
 
-    if len(sys.argv) > 2:
-        pred_fam = True
     if len(sys.argv) > 3:
+        pred_fam = True
+    if len(sys.argv) > 4:
         pred_lang = True
 
     print('Loading Train Data...')
@@ -206,7 +206,7 @@ if __name__ == '__main__':
     print('Loading Test Data...')
     test_data = tools.load_wiki_data(wiki_path + 'test/')
 
-    n = 2
+    n = int(sys.argv[1])
     orders = {}
     for lang in lang_to_fam.keys():
         orders[lang] = n
@@ -225,4 +225,4 @@ if __name__ == '__main__':
         for i in range(0, len(gold_labels)):
             gold_labels[i] = lang_to_fam[gold_labels[i]]
 
-    tools.write_pred(y_pred, gold_labels, sys.argv[1])
+    tools.write_pred(y_pred, gold_labels, sys.argv[2])

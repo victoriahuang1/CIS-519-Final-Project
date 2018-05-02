@@ -5,28 +5,33 @@ import data_tools as tools
 import numpy as np
 import language_model as lm
 from sklearn import linear_model
+from sklearn.svm import SVC
 
 
 lang_to_num = dict(zip(lm.lang_to_fam.keys(), [i for i in range(0, len(lm.lang_to_fam))]))
 
 
 def get_lm_as_features(lms, documents, is_train=True):
-    pickle_path = "pickles/features-{}.p".format('tr' if is_train else 'ts')
-    if os.path.exists(pickle_path):
-        return pickle.load(open(pickle_path, "rb"))
+    # Do not pickle: train labels may not match up
+    # pickle_path = "pickles/features.p"
+    # if os.path.exists(pickle_path) and is_train:
+        # return pickle.load(open(pickle_path, "rb"))
 
     # if pickle not there, then compute
     count = 0
-    all_features = np.zeros((len(documents), len(lms)))
+    all_features = np.zeros((len(documents), len(lms) + 1))
     for i in range(0, len(documents)):
+        doc_text = ' '.join(documents[i])
         for j in range(0, len(lms)):
-            score = lms[j].predict(' '.join(documents[i]))
+            score = lms[j].predict(doc_text)
             all_features[i][j] = score
+        all_features[i][len(lms)] = 1 if all(ord(char) < 128 for char in doc_text) else 0
         count += 1
-        if count % 10 == 0:
+        if count % 50 == 0:
             print("Features extracted: {}".format(count))
 
-    pickle.dump(all_features, open("pickles/features-{}.p".format('tr' if is_train else 'ts'), "wb"))
+    # if is_train:
+    #     pickle.dump(all_features, open("pickles/features.p", "wb"))
     return all_features
 
 
@@ -79,12 +84,12 @@ if __name__ == '__main__':
         print('Argument for output file needed')
 
     pred_fam = False
-    pred_lang = False
+    vote = False
 
     if len(sys.argv) > 2:
-        pred_fam = True
+        vote = int(sys.argv[2]) == 1
     if len(sys.argv) > 3:
-        pred_lang = True
+        pred_fam = True
 
     print('Loading Train Data...')
     train_data = tools.load_wiki_data(lm.wiki_path + 'train/')
@@ -96,8 +101,6 @@ if __name__ == '__main__':
     min_order = 2
     max_order = 4
 
-    vote = False
-
     print('Training language models...')
 
     if vote:
@@ -107,15 +110,20 @@ if __name__ == '__main__':
         print('Making Predictions...')
         y_pred = predict_by_vote(ensemble, test_docs)
     else:
-        clf = linear_model.SGDClassifier()
+        # clf = linear_model.SGDClassifier()
+        clf = SVC()
 
-        sample_size = 100
+        sample_size = 500
 
         indices = np.arange(len(train_docs))
         sample = np.random.choice(indices, size=sample_size, replace=False)
 
         train_docs = [train_docs[i] for i in sample]
         train_labels = [train_labels[i] for i in sample]
+
+        if pred_fam:
+            for i in range(0, len(train_docs)):
+                train_labels[i] = lm.lang_to_fam[train_labels[i]]
 
         indices = np.arange(len(test_docs))
         sample = np.random.choice(indices, size=sample_size, replace=False)
