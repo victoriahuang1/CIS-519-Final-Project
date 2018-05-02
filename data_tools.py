@@ -20,15 +20,16 @@ def read_wiki_file(datapath):
         curr_doc = []
         for line in f:
             if '</doc>' in line:
-                curr_doc = []
                 docs.append(curr_doc)
+                curr_doc = []
                 continue
             elif '<doc' in line:
                 continue
             words = line.split()
             curr_doc += words
     f.close()
-    docs.append(curr_doc)
+    if len(curr_doc) > 0:
+        docs.append(curr_doc)
     return docs
 
 
