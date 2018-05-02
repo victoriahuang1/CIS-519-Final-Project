@@ -206,7 +206,7 @@ if __name__ == '__main__':
     print('Loading Test Data...')
     test_data = tools.load_wiki_data(wiki_path + 'test/')
 
-    n = 4
+    n = 2
     orders = {}
     for lang in lang_to_fam.keys():
         orders[lang] = n
