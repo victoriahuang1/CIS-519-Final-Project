@@ -202,9 +202,9 @@ if __name__ == '__main__':
         pred_lang = True
 
     print('Loading Train Data...')
-    train_data = tools.load_wiki_data(wiki_path + 'train/')
+    train_data = tools.load_wiki_data(wiki_path + 'train/', filtered=True)
     print('Loading Test Data...')
-    test_data = tools.load_wiki_data(wiki_path + 'test/')
+    test_data = tools.load_wiki_data(wiki_path + 'test/', filtered=True)
 
     n = int(sys.argv[1])
     orders = {}
