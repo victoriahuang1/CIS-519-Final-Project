@@ -13,27 +13,19 @@ def read_lang_to_fam(filepath):
 
 
 # Reads a wiki file and returns a list of documents
-def read_wiki_file(datapath, filtered=False):
+def read_wiki_file(datapath):
     docs = []
 
     with open(datapath, mode='r', errors='ignore', encoding='utf-8') as f:
         curr_doc = []
         for line in f:
             if '</doc>' in line:
-                if len(curr_doc) > 0:
-                    docs.append(curr_doc)
+                docs.append(curr_doc)
                 curr_doc = []
                 continue
             elif '<doc' in line:
                 continue
             words = line.split()
-
-            if filtered:
-                filtered_words = []
-                for word in words:
-                    if not word.isdigit():
-                        filtered_words.append(word)
-                words = filtered_words
             curr_doc += words
     f.close()
     if len(curr_doc) > 0:
@@ -80,17 +72,25 @@ def load_all_chars(char_file):
 
 
 # Loads examples (lists of lists of strings) and their labels
-def load_wiki_data(data_dir, filtered=False):
+def load_wiki_data(data_dir):
     examples = []
     labels = []
     for subdir in os.listdir(data_dir):
         for doc in os.listdir(data_dir + subdir):
-            new_docs = read_wiki_file(data_dir + subdir + '/' + doc, filtered=filtered)
+            new_docs = read_wiki_file(data_dir + subdir + '/' + doc)
             for i in range(len(new_docs)):
                 labels.append(subdir)
             examples += new_docs
     return examples, labels
 
+def load_gutenberg_data(data_dir):
+    examples = []
+    labels = []
+    for subdir in os.listdir(data_dir):
+        for doc in os.listdir(data_dir + subdir):
+            examples.append(doc)
+            labels.append(subdir)
+    return examples, labels
 
 # Writes predictions and gold labels to file
 def write_pred(y_pred, gold_labels, out_path):

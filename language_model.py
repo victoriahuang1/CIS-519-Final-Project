@@ -8,6 +8,8 @@ import os
 lang_to_fam_path = 'data/languages_to_families.txt'
 wiki_path = 'data/wiki/'
 wiki_char_file = 'data/data_wiki_chars'
+gutenberg_path = 'data/gutenberg/'
+gutenberg_char_file = 'data/data_gutenberg_chars/'
 
 # maps a language to its language family
 lang_to_fam = tools.read_lang_to_fam(lang_to_fam_path)
@@ -19,7 +21,7 @@ vocab = set([chr(i) for i in range(256)])
 
 
 class LanguageModel(object):
-    def __init__(self, language, order=4, add_k=1.0, learn_fam=False, pretrained=False):
+    def __init__(self, language, order=4, add_k=1.0, learn_fam=False, pretrained=False, corpus = 'wiki'):
         super(LanguageModel, self).__init__()
 
         self.language = language
@@ -30,11 +32,11 @@ class LanguageModel(object):
         self.learn_fam = learn_fam
         self.ngrams = {}
         self.pretrained = pretrained
-
+        self.corpus = 'wiki'
     # trains model on training data (should take in list of documents)
     def train(self, train_data):
         if self.pretrained:
-            pickle_path = "pickles/{}-{}.p".format(self.language, self.order)
+            pickle_path = "pickles/{}-{}-{}.p".format(self.language, self.order, self.corpus)
             if os.path.exists(pickle_path):
                 self.ngrams = pickle.load(open(pickle_path, "rb"))
                 return
@@ -82,7 +84,7 @@ class LanguageModel(object):
         for hist, chars in lm.items():
             self.ngrams[hist] = normalize(chars)
         print("Finished {}".format(self.language))
-        pickle.dump(self.ngrams, open("pickles/{}-{}.p".format(self.language, self.order), "wb"))
+        pickle.dump(self.ngrams, open("pickles/{}-{}-{}.p".format(self.language, self.order, self.corpus), "wb"))
 
     # gives perplexity score
     def predict(self, document):
@@ -177,13 +179,13 @@ def predict_by_word(documents, models):
     return labels
 
 
-def get_language_models(orders, add_k, learn_fam, train_data, pretrained):
+def get_language_models(orders, add_k, learn_fam, train_data, pretrained, corpus = 'wiki'):
     models = []
 
     # currently assuming that P(Country) is the same for all countries - TODO: CHANGE?
     for language in lang_to_fam.keys():
         print("Training {} model...".format(language))
-        model = LanguageModel(language, order=orders[language], add_k=add_k, learn_fam=learn_fam, pretrained=pretrained)
+        model = LanguageModel(language, order=orders[language], add_k=add_k, learn_fam=learn_fam, pretrained=pretrained, corpus=corpus)
         model.train(train_data)
         models.append(model)
     return models
@@ -202,9 +204,9 @@ if __name__ == '__main__':
         pred_lang = True
 
     print('Loading Train Data...')
-    train_data = tools.load_wiki_data(wiki_path + 'train/', filtered=True)
+    train_data = tools.load_wiki_data(wiki_path + 'train/')
     print('Loading Test Data...')
-    test_data = tools.load_wiki_data(wiki_path + 'test/', filtered=True)
+    test_data = tools.load_wiki_data(wiki_path + 'test/')
 
     n = int(sys.argv[1])
     orders = {}
