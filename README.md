@@ -59,7 +59,8 @@ We tried several additional ideas to build off of our language model baseline:
 * Predicting the language of each word in the document separately and making the label the most predicted label in the
 document (1)
 * Using language models as features in a linear model (SVM) (2)
-* Incorporating more features: whether all characters are ASCII, average length of words, TODO: list features
+* Ignoring ambiguous words (i.e. 123 can be in any language) in training and testing
+* Incorporating more features: whether all characters are ASCII, average length of words
 * Making an ensemble method with different n-gram language models, where the most voted label wins (3)
 
 To run the extensions:
