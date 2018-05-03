@@ -31,7 +31,13 @@ $ Accuracy: 0.5
 * Predicts labels based on probability distribution defined by the label proportions
 * All further work should be able to beat this baseline
 
-$ python3.6 simple_baseline.py pred_file 
+$ python3.6 simple_baseline.py pred_file
+
+Alternatively, you can just run run_simple.sh to get both the predictions and the score.
+
+$ sh run_simple.sh 1    # to predict languages
+
+$ sh run_simple.sh 2    # to predict language families
 
 
 ## Language Model Baseline
@@ -39,13 +45,29 @@ $ python3.6 simple_baseline.py pred_file
 * We have a separate model for each language. Each model is trained on one particular language and
 gives a score of how confident it is that the given document is written in that language.
 * We take the prediction of the model with the highest score (One-vs-All with Winner Takes All)
-* TODO: explain how to run
+
+To run, use the run_language_model.sh script:
+
+$ sh run_language_model.sh 1 3  # to predict languages, using n-grams with a history of the last 3 characters
+
+$ sh run_language_model.sh 2 3  # to predict languages families, using n-grams with a history of the last 3 characters
 
 
 ## Extensions
 
 We tried several additional ideas to build off of our language model baseline:
-* Incorporating more features: TODO: list features
-* Boosting with language models as features in a linear model (SVM) TODO: change?
-* Using the naive bayes assumption for determining the probability of code-switching as opposed to
-predicting the the language of each word separately
+* Predicting the language of each word in the document separately and making the label the most predicted label in the
+document (1)
+* Using language models as features in a linear model (SVM) (2)
+* Incorporating more features: whether all characters are ASCII, average length of words, TODO: list features
+* Making an ensemble method with different n-gram language models, where the most voted label wins (3)
+
+To run the extensions:
+
+$ sh run_improved.sh 1 1    # to predict languages using extension (3)
+
+$ sh run_improved.sh 2 1    # to predict language families using extension (3)
+
+$ sh run_improved.sh 1 0    # to predict languages using extension (2)
+
+$ sh run_improved.sh 2 0    # to predict languages using extension (2)
