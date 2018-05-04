@@ -13,28 +13,38 @@ def read_lang_to_fam(filepath):
 
 
 # Reads a wiki file and returns a list of documents
-def read_wiki_file(datapath):
+def read_wiki_file(datapath, filtered=False):
     docs = []
 
     with open(datapath, mode='r', errors='ignore', encoding='utf-8') as f:
         curr_doc = []
         for line in f:
             if '</doc>' in line:
-                docs.append(curr_doc)
+                if len(curr_doc) > 0:
+                    docs.append(curr_doc)
                 curr_doc = []
                 continue
             elif '<doc' in line:
                 continue
             words = line.split()
+
+            if filtered:
+                filtered_words = []
+                for word in words:
+                    if not word.isdigit():
+                        filtered_words.append(word)
+                words = filtered_words
             curr_doc += words
     f.close()
     if len(curr_doc) > 0:
         docs.append(curr_doc)
     return docs
 
+
 def read_gutenberg_file(datapath):
     f = open(datapath, "r", errors='ignore', encoding='utf-8')
     return f.read()
+
 
 # Writes all characters in train and test set to file
 def get_all_chars(train_dir, test_dir, out_path):
@@ -75,16 +85,17 @@ def load_all_chars(char_file):
 
 
 # Loads examples (lists of lists of strings) and their labels
-def load_wiki_data(data_dir):
+def load_wiki_data(data_dir, filtered=False):
     examples = []
     labels = []
     for subdir in os.listdir(data_dir):
         for doc in os.listdir(data_dir + subdir):
-            new_docs = read_wiki_file(data_dir + subdir + '/' + doc)
+            new_docs = read_wiki_file(data_dir + subdir + '/' + doc, filtered=False)
             for i in range(len(new_docs)):
                 labels.append(subdir)
             examples += new_docs
     return examples, labels
+
 
 def load_gutenberg_data(data_dir):
     examples = []
