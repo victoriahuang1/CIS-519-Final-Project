@@ -42,8 +42,39 @@ def read_wiki_file(datapath, filtered=False):
 
 
 def read_gutenberg_file(datapath):
-    f = open(datapath, "r", errors='ignore', encoding='utf-8')
-    return f.read()
+    is_start1 = False
+    is_start2 = False
+    text_after_start1 = False
+    end_text_after_start1 = False
+    doc = []
+    with open(datapath, "r", errors='ignore', encoding='utf-8') as f:
+        for line in f:
+            if not is_start1:
+                if "*** START" in line:
+                    is_start1 = True
+                else:
+                    continue
+            elif not is_start2:
+                if not text_after_start1:
+                    if len(line.strip()) > 0:
+                        text_after_start1 = True
+                    else:
+                        continue
+                elif len(line.strip()) == 0:
+                    end_text_after_start1 = True
+                else:
+                    if end_text_after_start1:
+                        is_start2 = True
+                    else:
+                        continue
+            else:
+                if "End of the Project Gutenberg" in line or "*** END" in line:
+                    break
+                words = line.split()
+                if len(words) > 0:
+                    doc += words
+    f.close()
+    return doc
 
 
 # Writes all characters in train and test set to file
