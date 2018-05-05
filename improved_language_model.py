@@ -7,7 +7,6 @@ import language_model as lm
 from sklearn import linear_model
 from sklearn.svm import SVC
 
-
 lang_to_num = dict(zip(lm.lang_to_fam.keys(), [i for i in range(0, len(lm.lang_to_fam))]))
 
 
@@ -15,7 +14,7 @@ def get_lm_as_features(lms, documents, is_train=True):
     # Do not pickle: train labels may not match up
     # pickle_path = "pickles/features.p"
     # if os.path.exists(pickle_path) and is_train:
-        # return pickle.load(open(pickle_path, "rb"))
+    # return pickle.load(open(pickle_path, "rb"))
 
     # if pickle not there, then compute
     count = 0
@@ -37,12 +36,13 @@ def get_lm_as_features(lms, documents, is_train=True):
 
 
 class Ensemble(object):
-    def __init__(self, min_order, max_order, add_k=1.0, learn_fam=False):
+    def __init__(self, min_order, max_order, add_k=1.0, learn_fam=False, corpus='wiki'):
         self.min_order = min_order
         self.max_order = max_order
         self.add_k = add_k
         self.learn_fam = learn_fam
         self.models = []
+        self.corpus = corpus
 
     def train(self, train_data):
         for n in range(self.min_order, self.max_order + 1):
@@ -50,7 +50,8 @@ class Ensemble(object):
             for lang in lm.lang_to_fam.keys():
                 orders[lang] = n
 
-            self.models.append(lm.get_language_models(orders, self.add_k, self.learn_fam, train_data, True))
+            self.models.append(
+                lm.get_language_models(orders, self.add_k, self.learn_fam, train_data, True, self.corpus))
 
     # all models vote on the label, and winner takes all
     def predict(self, doc):
@@ -113,8 +114,8 @@ if __name__ == '__main__':
     if vote:
         # ensemble = Ensemble(min_order, max_order, learn_fam=pred_fam)
         # ensemble.train(train_data)
-        
-        ensemble_2 = Ensemble(min_order, max_order, learn_fam=pred_fam)
+
+        ensemble_2 = Ensemble(min_order, max_order, learn_fam=pred_fam, corpus='gutenberg')
         ensemble_2.train(train_data_2)
 
         print('Making Predictions...')
@@ -124,7 +125,7 @@ if __name__ == '__main__':
         # clf = linear_model.SGDClassifier()
         clf = SVC()
         clf_2 = SVC()
-        
+
         sample_size = 200
 
         # indices = np.arange(len(train_docs))
@@ -135,14 +136,14 @@ if __name__ == '__main__':
 
         indices_2 = np.arange(len(train_docs_2))
         sample_2 = np.random.choice(indices_2, size=sample_size, replace=False)
-        
+
         train_docs_2 = [train_docs_2[i] for i in sample_2]
         train_labels_2 = [train_labels_2[i] for i in sample_2]
-        
+
         if pred_fam:
             # for i in range(0, len(train_docs)):
             #     train_labels[i] = lm.lang_to_fam[train_labels[i]]
-                
+
             for i in range(0, len(train_docs_2)):
                 train_labels_2[i] = lm.lang_to_fam[train_labels_2[i]]
 
@@ -151,10 +152,10 @@ if __name__ == '__main__':
 
         indices_2 = np.arange(len(test_docs_2))
         sample_2 = np.random.choice(indices_2, size=sample_size, replace=False)
-        
+
         # test_docs = [test_docs[i] for i in sample]
         # gold_labels = [gold_labels[i] for i in sample]
-        
+
         test_docs_2 = [test_docs_2[i] for i in sample_2]
         gold_labels_2 = [gold_labels_2[i] for i in sample_2]
 
@@ -164,12 +165,12 @@ if __name__ == '__main__':
             orders[lang] = n
 
         # lms = lm.get_language_models(orders, 1, pred_fam, train_data, True)
-        lms_2 = lm.get_language_models(orders, 1, pred_fam, train_data_2, True)
-        
+        lms_2 = lm.get_language_models(orders, 1, pred_fam, train_data_2, True, corpus='gutenberg')
+
         print('Getting features...')
         # train_x = get_lm_as_features(lms, train_docs)
         # test_x = get_lm_as_features(lms, test_docs, is_train=False)
-        
+
         train_x_2 = get_lm_as_features(lms_2, train_docs_2)
         test_x_2 = get_lm_as_features(lms_2, test_docs_2)
 
@@ -179,16 +180,16 @@ if __name__ == '__main__':
 
         train_y_2 = np.array(train_labels_2)
         clf_2.fit(train_x_2, train_y_2)
-        
+
         print('Making Predictions...')
         # y_pred = clf.predict(test_x)
-        
+
         y_pred_2 = clf_2.predict(test_x_2)
 
     if pred_fam:
         # for i in range(0, len(gold_labels)):
         #     gold_labels[i] = lm.lang_to_fam[gold_labels[i]]
-        
+
         for i in range(0, len(gold_labels_2)):
             gold_labels_2[i] = lm.lang_to_fam[gold_labels_2[i]]
 

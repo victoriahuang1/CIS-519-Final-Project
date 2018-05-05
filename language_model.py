@@ -17,11 +17,12 @@ lang_to_fam = tools.read_lang_to_fam(lang_to_fam_path)
 # all possible chars in train and test datasets
 vocab = set([chr(i) for i in range(256)])
 
+
 # vocab = tools.load_all_chars(wiki_char_file)
 
 
 class LanguageModel(object):
-    def __init__(self, language, order=4, add_k=1.0, learn_fam=False, pretrained=False, corpus = 'wiki'):
+    def __init__(self, language, order=4, add_k=1.0, learn_fam=False, pretrained=False, corpus='wiki'):
         super(LanguageModel, self).__init__()
 
         self.language = language
@@ -32,7 +33,8 @@ class LanguageModel(object):
         self.learn_fam = learn_fam
         self.ngrams = {}
         self.pretrained = pretrained
-        self.corpus = 'wiki'
+        self.corpus = corpus
+
     # trains model on training data (should take in list of documents)
     def train(self, train_data):
         if self.pretrained:
@@ -64,7 +66,7 @@ class LanguageModel(object):
                 lm[history][char] += 1
 
             count += 1
-            #TODO: change?
+            # TODO: change?
             if count == 10:
                 break
 
@@ -179,13 +181,14 @@ def predict_by_word(documents, models):
     return labels
 
 
-def get_language_models(orders, add_k, learn_fam, train_data, pretrained, corpus = 'wiki'):
+def get_language_models(orders, add_k, learn_fam, train_data, pretrained, corpus='wiki'):
     models = []
 
     # currently assuming that P(Country) is the same for all countries - TODO: CHANGE?
     for language in lang_to_fam.keys():
         print("Training {} model...".format(language))
-        model = LanguageModel(language, order=orders[language], add_k=add_k, learn_fam=learn_fam, pretrained=pretrained, corpus=corpus)
+        model = LanguageModel(language, order=orders[language], add_k=add_k, learn_fam=learn_fam, pretrained=pretrained,
+                              corpus=corpus)
         model.train(train_data)
         models.append(model)
     return models
