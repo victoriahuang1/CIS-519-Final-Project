@@ -150,7 +150,7 @@ def create_smaller_texts(examples, labels, size):
                 new_labels.append(labels[i])
                 sample = []
     if len(sample) != 0:
-        samples.append[sample]
+        samples.append(sample)
         new_labels.append(labels[len(labels) - 1])
     return samples, new_labels
             
