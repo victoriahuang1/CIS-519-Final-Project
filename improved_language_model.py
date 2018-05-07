@@ -88,11 +88,14 @@ if __name__ == '__main__':
 
     pred_fam = False
     vote = False
+    test_size = 0
 
     if len(sys.argv) > 2:
         vote = int(sys.argv[2]) == 1
-    if len(sys.argv) > 3:
+    if len(sys.argv) > 3 and int(sys.argv[3]) == 1:
         pred_fam = True
+    if len(sys.argv) > 4:
+        test_size = int(sys.argv[4])
 
     is_wiki = True
 
@@ -102,12 +105,16 @@ if __name__ == '__main__':
         train_docs, train_labels = train_data
         print('Loading Wiki Test Data...')
         test_docs, gold_labels = tools.load_wiki_data(lm.wiki_path + 'test/')
+        if(test_size != 0):
+            test_docs, gold_labels = tools.create_smaller_texts(test_docs, gold_labels, test_size)
     else:
         print('Loading Gutenberg Train Data...')
         train_data = tools.load_gutenberg_data(lm.gutenberg_path + 'train/')
         train_docs, train_labels = train_data
         print('Loading Gutenberg Test Data...')
         test_docs, gold_labels = tools.load_gutenberg_data(lm.gutenberg_path + 'test/')
+        if(test_size != 0):
+            test_docs, gold_labels = tools.create_smaller_texts(test_docs, gold_labels, test_size)
 
     min_order = 2
     max_order = 4
