@@ -23,7 +23,8 @@ def get_lm_as_features(lms, documents, is_train=True):
         doc_text = ' '.join(documents[i])
         for j in range(0, len(lms)):
             score = lms[j].predict(doc_text)
-            all_features[i][j] = score
+            if len(doc_text) > 0:
+                all_features[i][j] = score
         all_features[i][len(lms)] = 1 if all(ord(char) < 128 for char in doc_text) else 0
         # all_features[i][len(lms) + 1] = 0 if len(documents[i]) == 0 else float(len(doc_text)) / len(documents[i])    # average word length
         count += 1
