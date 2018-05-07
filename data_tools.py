@@ -137,7 +137,20 @@ def load_gutenberg_data(data_dir):
             labels.append(subdir)
     return examples, labels
 
-
+def create_smaller_texts(examples, labels, size):
+    samples = []
+    new_labels = []
+    sample = []
+    for i in range(len(examples)):
+        doc = examples[i]
+        for word in doc:
+            sample.append(word)
+            if len(sample) == size:
+                samples.append(sample)
+                new_labels.append(labels[i])
+                sample = []
+    return samples, new_labels
+            
 # Writes predictions and gold labels to file
 def write_pred(y_pred, gold_labels, out_path):
     with open(out_path, 'w') as out:
